@@ -1,22 +1,55 @@
 package com.ericpol.lab.java.gsm;
 
 
+import com.ericpol.lab.java.gsm.network.core.MobileSwitchingCenter;
+import com.ericpol.lab.java.gsm.network.radio.BaseStationController;
+import com.ericpol.lab.java.gsm.network.radio.BaseTransceiverStation;
+import com.ericpol.lab.java.gsm.phone.Phone;
+import com.ericpol.lab.java.gsm.phone.charger.Charger;
+import com.ericpol.lab.java.gsm.phone.htc.HTCDesire;
+import com.ericpol.lab.java.gsm.phone.htc.HTCDesireCharger;
+import com.ericpol.lab.java.gsm.phone.samsung.SamsungCharger;
+import com.ericpol.lab.java.gsm.phone.samsung.SamsungS6;
+import com.ericpol.lab.java.gsm.utils.IDGenerator;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by xdzm on 2015-09-25.
  */
 public class Launcher {
 
-
     public static void main(String[] args)  {
 
         System.out.println("[Launcher] starting system...");
 
-        // TODO code here
+        Phone samsungss6       = new SamsungS6(3);
+        Phone htc              = new HTCDesire(2);
+
+        Charger samsungCharger = new SamsungCharger();
+        Charger HTCCharger     = new HTCDesireCharger();
+
+        samsungss6.charge(samsungCharger, 3);
+        htc.charge(HTCCharger, 2);
+
+        Box<Phone>   phoneBox   = new Box<Phone>();
+        Box<Charger> chargerBox = new Box<Charger>();
+
+        phoneBox.setItem(samsungss6);
+        chargerBox.setItem(samsungCharger);
+
+        Map<Producer, Box <Phone>> flagshipPhones = new HashMap<Producer, Box<Phone>>();
+        flagshipPhones.put(Producer.SAMSUNG, phoneBox);
+
+        samsungss6 = flagshipPhones.get(Producer.SAMSUNG).getItem();
+
+        samsungss6.register(initInfrastructure());
 
         System.out.println("[Launcher] done.");
     }
 
-/*
+
     private static MobileSwitchingCenter initInfrastructure(){
 
         MobileSwitchingCenter msc = new MobileSwitchingCenter();
@@ -50,7 +83,5 @@ public class Launcher {
 
         return msc;
     }
-*/
-
 
 }

@@ -1,8 +1,14 @@
 package com.ericpol.lab.java.gsm.phone;
 
+import com.ericpol.lab.java.gsm.Producer;
+import com.ericpol.lab.java.gsm.network.radio.BaseTransceiverStation;
 import com.ericpol.lab.java.gsm.phone.charger.Charger;
 import com.ericpol.lab.java.gsm.phone.charger.ChargingController;
 import com.ericpol.lab.java.gsm.network.core.MobileSwitchingCenter;
+import com.ericpol.lab.java.gsm.phone.charger.IncompatibleChargerException;
+import com.ericpol.lab.java.gsm.utils.LogHelper;
+
+import java.util.Set;
 
 
 public abstract class Phone {
@@ -15,32 +21,54 @@ public abstract class Phone {
 
     private Status status = Status.DISCONNECTED;
 
-    // TODO: create abstract methods indicating phone producer, model, and power consumption
+    public abstract Producer getProducer();
+
+    public abstract String getModel();
+
+    public abstract int getPowerConsumption();
 
     public Phone(int id){
         this.id = id;
-        // TODO: reduce battery just after creation
+        battery-=getPowerConsumption();
     }
 
     public void charge(Charger charger, int hours) {
         ChargingController controller = new ChargingController(this, charger);
-        controller.plugIn(hours);
+        try {
+            controller.plugIn(hours);
+        } catch (IncompatibleChargerException e) {
+            e.printStackTrace();
+        }
     };
 
     public void register(MobileSwitchingCenter msc){
 
-        System.out.println(this + "registering ...");
+        LogHelper.log(this, "registering ...");
 
-        // TODO 1: attach to MSC when disconnected, log proper message otherwise.
+        if(status==Status.DISCONNECTED) {
+            BaseTransceiverStation bts = msc.attach(this);
+            battery -= getPowerConsumption();
+            status = Status.CONNECTED;
+            LogHelper.log(this, "connected to " + bts);
 
-        // TODO 2: log BTS phone is connected to
-
-        // TODO 3: reduce battery
-
-        // TODO 4: change status to connected
-
+        } else {
+            LogHelper.log(this, "already connected. registration skipped.");
+        }
     }
 
+    private BaseTransceiverStation findClosestStation(Set<BaseTransceiverStation> btsSet){
+        BaseTransceiverStation candidate = null;
+
+        // TODO: return the closest bts. phone and bts ids represent location
+
+        for(BaseTransceiverStation bts : btsSet){
+            if(candidate==null || Math.abs(bts.getId()-id) < Math.abs(candidate.getId()-id)){
+                candidate = bts;
+            }
+        }
+
+        return candidate;
+    }
 
     public int getId() {
         return id;
@@ -53,11 +81,11 @@ public abstract class Phone {
     public void setBattery(int v){
         battery = v;
     }
-    
-    public String toString(){
-        return id + ":b=" + battery + ":s=" + status;
-    }
 
+    public String toString(){
+        return getProducer() + " " + getModel() + ":" + id + ":b="
+                + battery + ":s=" + status;
+    }
     static enum Status {
         CONNECTED,
         DISCONNECTED

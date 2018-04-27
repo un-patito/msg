@@ -13,7 +13,8 @@ public class IDGenerator {
      */
     public static int newID() {
 
-        int newInt = random.nextInt(1000) + 1;
-        return newInt;
+        // TODO: implement identifier generation, cache already generated ids in a set to check if newly generated were used before
+
+        return 0;
     }
 }

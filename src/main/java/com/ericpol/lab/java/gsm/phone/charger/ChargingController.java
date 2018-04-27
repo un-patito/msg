@@ -13,7 +13,7 @@ public class ChargingController {
         this.charger = charger;
     }
 
-    public void plugIn(final int hours){
+    public void plugIn(final int hours) throws IncompatibleChargerException{
 
         compatibilityCheck();
 
@@ -32,23 +32,33 @@ public class ChargingController {
         System.out.println(phone + "charging finished.");
     }
 
-    private void compatibilityCheck(){
+    private void compatibilityCheck() throws IncompatibleChargerException{
+
+        if(charger.getProducer()!=phone.getProducer()){
+            throw new IncompatibleChargerException("charger of producer " + charger.getProducer() +
+                    "does not match phone producer " + phone.getProducer());
+        }
 
     }
-
     private boolean charge(){
 
-        int battery = phone.getBattery();
+        int battery  = phone.getBattery();
         int increase = charger.getVoltage();
         boolean batteryFull = false;
 
-        // TODO 1: increase battery level
+        battery+=increase;
 
-        // TODO 2: check if level didn't exeeded maximum level
-
-        // TODO 3: return information if battery is full already
-
+        if(battery>=Phone.MAX_BATTERY){
+            batteryFull = true;
+            phone.setBattery(Phone.MAX_BATTERY);
+        } else {
+            phone.setBattery(battery);
+        }
         return batteryFull;
+
+        // TODO: increase battery level, ensure doesn't exceed maximum value, return info if full
+
+
     }
 
     public Charger getCharger() {
